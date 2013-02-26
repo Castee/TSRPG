@@ -1,3 +1,60 @@
-TSRPG by Alexander Carlsson aka voncarlsson, available under the MIT license.
+How to add your own stuff to data.xml.
 
-bla bla bla something of use will be added here -- eventually -- maybe.
+Valid tags:
+
+Items
+  Item
+    id - required
+    name - required
+    effects
+      health
+      mana
+      experience
+      libido
+
+locations
+  location
+    id - required
+    name - required
+    onTravel - required
+    threat - required
+    enemies
+      id - required
+    discoverables
+      id - required
+
+Enemies
+  enemy
+    id - required
+    name - required
+    damage - required
+    health - required
+
+Events
+  event
+    id - required
+    title - required
+    text - required
+    effects
+      health
+      mana
+      experience
+      libido
+    buttons
+      travel
+      event
+    requirements
+      health
+      mana
+      strength
+      stamina
+      agility
+      intelligence
+      charisma
+      libido
+      energy
+      lust 
+      special 
+      origin
+      location
+      level
