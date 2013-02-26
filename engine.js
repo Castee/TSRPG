@@ -1200,7 +1200,7 @@ function readBlob(evt) {
     var stop = file.size - 1;
     var reader = new FileReader();
     reader.onloadend = function (evt) {
-        var checklist = ["c3RhbWluYQ==","YWdpbGl0eQ==","c3RyZW5ndGg=","bGFiaWRv","Y2hhcmlzbWE=","aW50ZWxsaWdlbmNl","c2tpbGxwb2ludA==","aGVhbHRo","aGVhbHRoX21heA==","ZW5lcmd5","ZW5lcmd5X21heA==","bGV2ZWw=","ZXhwZXJpZW5jZQ==","ZXhwZXJpZW5jZV9tYXg=","bHVzdA==","bHVzdF9tYXg=","Z2VuZGVy","Ym9keXR5cGU=","aGFpcmNvbG9y","c2tpbmNvbG9y","b3JpZ2lu","c3BlY2lhbA==","ZGlmZmljdWx0eQ==","bmFtZQ==","c3VybmFtZQ==","ZXZlbnRz","bG9jYXRpb24=","bW9uZXk=","aW52ZW50b3J5","bWFuYQ==","bWFuYV9tYXg=","YmpfYmV0","dHdlbHZlaG91cmNsb2Nr","aG9tZQ==","dGltZQ==","Y3VzdG9taXRlbXM=","Ymdjb2xvcnNldHRpbmc=","bG9jYXRpb25zZGlzY292ZXJlZA==","cGxhY2VzZGlzY292ZXJlZA==","ZXF1aXBlZF93ZWFwb24=","ZXF1aXBlZF9oZWxt","ZXF1aXBlZF9jaGVzdA==","ZXF1aXBlZF9ib290cw==","ZXF1aXBlZF9oYW5kcw=="],
+        var checklist = ["c3RhbWluYQ==","YWdpbGl0eQ==","c3RyZW5ndGg=","bGliaWRv","Y2hhcmlzbWE=","aW50ZWxsaWdlbmNl","c2tpbGxwb2ludA==","aGVhbHRo","aGVhbHRoX21heA==","ZW5lcmd5","ZW5lcmd5X21heA==","bGV2ZWw=","ZXhwZXJpZW5jZQ==","ZXhwZXJpZW5jZV9tYXg=","bHVzdA==","bHVzdF9tYXg=","Z2VuZGVy","Ym9keXR5cGU=","aGFpcmNvbG9y","c2tpbmNvbG9y","b3JpZ2lu","c3BlY2lhbA==","ZGlmZmljdWx0eQ==","bmFtZQ==","c3VybmFtZQ==","ZXZlbnRz","bG9jYXRpb24=","bW9uZXk=","aW52ZW50b3J5","bWFuYQ==","bWFuYV9tYXg=","YmpfYmV0","dHdlbHZlaG91cmNsb2Nr","aG9tZQ==","dGltZQ==","Y3VzdG9taXRlbXM=","Ymdjb2xvcnNldHRpbmc=","bG9jYXRpb25zZGlzY292ZXJlZA==","cGxhY2VzZGlzY292ZXJlZA==","ZXF1aXBlZF93ZWFwb24=","ZXF1aXBlZF9oZWxt","ZXF1aXBlZF9jaGVzdA==","ZXF1aXBlZF9ib290cw==","ZXF1aXBlZF9oYW5kcw=="],
         loadgame = evt.target.result,
         temp = String(loadgame.split("\n")),
         i = null;
