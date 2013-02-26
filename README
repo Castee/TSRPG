@@ -41,9 +41,17 @@ Events
       experience
       libido
     buttons
+      /*
+        Every button _MUST_ have a id attribute, this defines, for instance, what id to travel to.
+      */
       travel
       event
     requirements
+        /*
+          Every requirement can have an "operator" attribute defining how the game will compare the values
+          Valid operators: =, >, <, <=, >= 
+          if not defined it will default to =
+        */
       health
       mana
       strength
