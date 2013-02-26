@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding="UTF-8"?>
+<data>
+	<items>
+		<item>
+			<id>1</id>
+			<price>20</price>
+			<name>Small Healing Potion</name>
+			<effects>
+				<heal>20</heal>
+			</effects>
+		</item>
+		<item>
+			<id>2</id>
+			<price>40</price>
+			<name>Healing Potion</name>
+			<effects>
+				<heal>40</heal>
+			</effects>
+		</item>
+		<item>
+			<id>3</id>
+			<price>60</price>
+			<name>Medium Healing Potion</name>
+			<effects>
+				<heal>60</heal>
+			</effects>
+		</item>
+		<item>
+			<id>4</id>
+			<price>80</price>
+			<name>Large Healing Potion</name>
+			<effects>
+				<heal>80</heal>
+			</effects>
+		</item>
+		<item>
+			<id>5</id>
+			<price>100</price>
+			<name>Super Healing Potion</name>
+			<effects>
+				<heal>100</heal>
+			</effects>
+		</item>
+			<item>
+			<id>6</id>
+			<price>20</price>
+			<name>Small Mana Potion</name>
+			<effects>
+				<mana>20</mana>
+			</effects>
+		</item>
+		<item>
+			<id>7</id>
+			<price>40</price>
+			<name>Mana Potion</name>
+			<effects>
+				<mana>40</mana>
+			</effects>
+		</item>
+		<item>
+			<id>8</id>
+			<price>60</price>
+			<name>Medium Mana Potion</name>
+			<effects>
+				<mana>60</mana>
+			</effects>
+		</item>
+		<item>
+			<id>9</id>
+			<price>80</price>
+			<name>Large Mana Potion</name>
+			<effects>
+				<mana>80</mana>
+			</effects>
+		</item>
+		<item>
+			<id>10</id>
+			<price>100</price>
+			<name>Super Mana Potion</name>
+			<effects>
+				<mana>100</mana>
+			</effects>
+		</item>
+	</items>
+	<locations>
+		<location>
+			<id>1</id>
+			<name>Grassland</name>
+			<onTravel>Grass reach as far as your eyes can see.</onTravel>
+			<threat>50</threat>
+			<enemies>
+				<id>2</id>
+				<id>8</id>
+			</enemies>
+			<discoverable>
+				<id>2</id>
+				<id>8</id>
+			</discoverable>
+		</location>
+	</locations>
+	<enemies>
+		<enemy>
+			<id>1</id>
+			<name>Goblin</name>
+			<damage>9</damage>
+			<health>15</health>
+		</enemy>
+	</enemies>
+</data>
