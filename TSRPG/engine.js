@@ -68,14 +68,14 @@ var Locations = (function () {
     return {
         get: function(key, index) {
             index = parseInt(index);
-            if(index === "NaN" || enemy[key] === "undefined") {
+            if(index === "NaN" || location[key] === "undefined") {
                 return false;
             }
             return location.key[index];
         },
         set: function(id, name, onTravel, threat, discoverables, enemies) {
             id = parseInt(id);
-            threat = parseInt(health);
+            threat = parseInt(threat);
             if(id === "NaN" || id === "undefined" || name.length < 1 || onTravel === "undefined" || threat === "NaN") {
                 return false;
             }
@@ -96,44 +96,58 @@ var Events = (function () {
     var event = [];
     event.title = [];
     event.text = [];
-    event.atrChange = [];
+    event.effects = [];
     event.buttons = [];
+    event.requirement = [];
     return {
         get: function(key, index) {
             index = parseInt(index);
-            if(index === "NaN" || enemy[key] === "undefined") {
+            if(index === "NaN" || event[key] === "undefined") {
                 return false;
             }
-            return location.key[index];
+            return event.key[index];
         },
-        set: function(id, name, onTravel, threat, discoverables, enemies) {
-            id = parseInt(id);
-            threat = parseInt(health);
-            if(id === "NaN" || id === "undefined" || name.length < 1 || onTravel === "undefined" || threat === "NaN") {
+        arr: function(key, index, divider) {
+            if(index === "NaN" || event[key] === "undefined") {
                 return false;
             }
-            location.name[id] = name;
-            location.description[id] = description;
-            location.threat[id] = threat;
-            if(discoverables) {
-                location.discoverables[id] = discoverables;
+            if(divider === "undefined") {
+                divider = ",";
             }
-            if(enemies) {
-                location.enemies[id] = enemies;
+            return event.key[index].split(divider);
+        },
+        set: function(id, title, text, effects, buttons, requirement) {
+            id = parseInt(id);
+            if(id === "NaN" || id === "undefined" || title.length < 1 || text === "undefined") {
+                return false;
+            }
+            event.title[id] = title;
+            event.text[id] = text;
+            if(effects) {
+                event.effects[id] = effects;
+            }
+            if(buttons) {
+                event.buttons[id] = buttons;
+            }
+            if(requirement) {
+                event.requirement[id] = requirement;
             }
         }
     };
 }());
 
 function xmlparser(txt) {
-    var itemId = [], i = 0, use, effects, discoverables, enemies,
-        tags = ["items item", "locations location", "enemies enemy"];
+    var itemId = [], i = 0, use, effects, discoverables, enemies, buttons, but, requirement, req,
+        tags = ["items item", "locations location", "enemies enemy"],
+        validreq = ["health", "mana", "strength", "stamina", "agility", "intelligence", "charisma", "libido", "energy", "lust" ,"special" ,"origin", "location", "level"];
     $.each(tags, function (index, value) {
     itemId = [];
         $(txt).find(value).each(function() {
             use = "";
             discoverables = "";
             enemies = "";
+            but = "";
+            req = "";
             if($(this).find("id").text() === "") {
                 //Empty IDs are not loaded.
                 console.log("XMLparserWarning: No ID defined");
@@ -150,19 +164,32 @@ function xmlparser(txt) {
             if($(effects).find("mana").length > 0) { use += (use.length > 0 ? "," : "") + "mp;" + $(effects).find("mana").text(); }
             if($(effects).find("experience").length > 0) { use += (use.length > 0 ? "," : "") + "xp;" + $(effects).find("experience").text(); }
             if($(effects).find("libido").length > 0) { use += (use.length > 0 ? "," : "") + "lb;" + $(effects).find("libido").text(); }
+
+            buttons = $(this).find("buttons").text();
+            if($(buttons).find("event").length > 0 && $(buttons).find("event").attr("id").length > 0) { but += (but.length > 0 ? "," : "") + "event;" + $(buttons).find("event").attr("id") + ";" + $(buttons).find("event").text(); }
+            if($(buttons).find("travel").length > 0 && $(buttons).find("travel").attr("id").length > 0) { but += (but.length > 0 ? "," : "") + "travel;" + $(buttons).find("travel").attr("id") + ";" + $(buttons).find("travel").text(); }
+
+            requirement = $(this).find("requirement").text();
+            $.each(validreq, function(x, v) {
+                if($(requirement).find(v).length > 0) {
+                    req += (req.length > 0 ? "," : "") + v + ";" + $(requirement).find(v).text() + ($(requirement).find(v).attr("operator") ? $(requirement).find(v).attr("operator") : "=");
+                }
+            });
             if(index === 0) {
                 Items.set(parseInt($(this).find("id").text()), $(this).find("name").text(), $(this).find("price").text(), (use === "undefined" ? null : use));
             } else if (index === 1) {
-                    $(this).find("discoverable id").each(function (i, v) {
+                    $(this).find("discoverable id").each(function (x, v) {
                         discoverables += (discoverables.length > 0 ? "," : "") + $(v).text();
                     });
-                $(this).find("enemies id").each(function (i, v) {
+                $(this).find("enemies id").each(function (x, v) {
                     enemies += (enemies.length > 0 ? "," : "") + $(v).text();
                 });
                 
                 Locations.set(parseInt($(this).find("id").text()), $(this).find("name").text(), $(this).find("onTravel").text(), $(this).find("threat").text() ,(discoverables.length > 0 ? null : discoverables), (enemies.length > 0 ? null : enemies));
             } else if (index === 2) {
                 Enemies.set(parseInt($(this).find("id").text()), $(this).find("name").text(), $(this).find("health").text(), $(this).find("damage").text());
+            } else if (index === 3) {
+                Events.set(parseInt($(this).find("id").text()), $(this).find("title").text(), $(this).find("text").text(), (use ? use : null), (but ? but : null), (req ? req : null));
             }
         });
     });
@@ -415,7 +442,42 @@ function sortSparseArray(arr) {
 }
 
 function event(id) {
-    
+    if(Events.get("title", id) === false) {
+        return;
+    }
+    $.each(Events.arr("requirement", id, ";"), function(index, value) {
+        switch(value[2]) {
+            case "=":
+                if(Player.get(value[0]) === value[1]) {
+                    return;
+                }
+            break;
+            case ">":
+                if(value[1] < Player.get(value[0])) {
+                    return;
+                }
+            break;
+            case "<":
+                if(value[1] > Player.get(value[0])) {
+                    return;
+                }
+            break;
+            case ">=":
+                if(value[1] <= Player.get(value[0])) {
+                    return;
+                }
+            break;
+            case "<=":
+                if(value[1] >= Player.get(value[0])) {
+                    return;
+                }
+            break;
+        }
+    });
+    $("#content").html("<h1>" + Events.get("title", id) + "</h1>" + Events.get("text", id));
+    if(Events.get("buttons", id)) {
+        
+    }
 }
 
 function equip_item(custom_item_id) {
