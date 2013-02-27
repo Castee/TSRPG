@@ -106,4 +106,6 @@
 			<health>15</health>
 		</enemy>
 	</enemies>
+	<events>
+	</events>
 </data>

@@ -1,31 +1,31 @@
 var Items = (function () {
-    var itemName = [], itemPrice = [], itemUse = [];
+    var item = [];
+    item.name = [];
+    item.price = [];
+    item.use = [];
+    item.event = [];
     return {
-        get: function(key, spec) {
+        get: function(key, index) {
             key = parseInt(key);
-            if(key === "NaN" || itemName[key] === "undefined") {
+            if(key === "NaN" || itemName.key === "undefined") {
                 return false;
             }
-            if(spec === "name") {
-                return itemName[key];
-            } else if (spec === "price") {
-                return itemPrice[key];
-            } else if (spec === "use") {
-                return itemUse[key];
-            }
-            return [itemName[key], (itemPrice[key] ? itemPrice[key] : null), (itemUse[key] ? itemUse[key] : null)];
+            return item.key[index];
         },
         set: function(id, name, price, use) {
             id = parseInt(id);
             if(id === "NaN" || id === "undefined" || name.length < 1) {
                 return false;
             }
-            itemName[id] = name;
+            item.name[id] = name;
             if(typeof price === "number") {
-                itemPrice[id] = price;
+                item.price[id] = price;
             }
             if(use) {
-                itemUse[id] = use;
+                item.use[id] = use;
+            }
+            if(event) {
+                item.event[id] = event;
             }
         }
     };
@@ -36,6 +36,7 @@ var Enemies = (function () {
     enemy.name = [];
     enemy.damage = [];
     enemy.health = [];
+    enemy.event = [];
     return {
         get: function(key, index) {
             index = parseInt(index);
@@ -44,7 +45,7 @@ var Enemies = (function () {
             }
             return enemy.key[index];
         },
-        set: function(id, name, health, damage) {
+        set: function(id, name, health, damage, event) {
             id = parseInt(id);
             health = parseInt(health);
             damage = parseInt(damage);
@@ -54,6 +55,9 @@ var Enemies = (function () {
             enemy.name[id] = name;
             enemy.damage[id] = damage;
             enemy.health[id] = health;
+            if(event) {
+                enemy.event[id] = event;
+            }
         }
     };
 }());
@@ -65,6 +69,7 @@ var Locations = (function () {
     location.threat = [];
     location.onTravel = [];
     location.enemies = [];
+    location.event = [];
     return {
         get: function(key, index) {
             index = parseInt(index);
@@ -73,7 +78,7 @@ var Locations = (function () {
             }
             return location.key[index];
         },
-        set: function(id, name, onTravel, threat, discoverables, enemies) {
+        set: function(id, name, onTravel, threat, discoverables, enemies, event) {
             id = parseInt(id);
             threat = parseInt(threat);
             if(id === "NaN" || id === "undefined" || name.length < 1 || onTravel === "undefined" || threat === "NaN") {
@@ -87,6 +92,9 @@ var Locations = (function () {
             }
             if(enemies) {
                 location.enemies[id] = enemies;
+            }
+            if(event) {
+                location.event[id] = event;
             }
         }
     };
@@ -137,7 +145,7 @@ var Events = (function () {
 }());
 
 function xmlparser(txt) {
-    var itemId = [], i = 0, use, effects, discoverables, enemies, buttons, but, requirement, req,
+    var itemId = [], i = 0, use, effects, discoverables, enemies, buttons, but, requirement, req, event,
         tags = ["items item", "locations location", "enemies enemy"],
         validreq = ["health", "mana", "strength", "stamina", "agility", "intelligence", "charisma", "libido", "energy", "lust" ,"special" ,"origin", "location", "level"];
     $.each(tags, function (index, value) {
@@ -148,6 +156,7 @@ function xmlparser(txt) {
             enemies = "";
             but = "";
             req = "";
+            event = "";
             if($(this).find("id").text() === "") {
                 //Empty IDs are not loaded.
                 console.log("XMLparserWarning: No ID defined");
@@ -165,6 +174,9 @@ function xmlparser(txt) {
             if($(effects).find("experience").length > 0) { use += (use.length > 0 ? "," : "") + "xp;" + $(effects).find("experience").text(); }
             if($(effects).find("libido").length > 0) { use += (use.length > 0 ? "," : "") + "lb;" + $(effects).find("libido").text(); }
 
+            $(this).find("event").each(function(x, v) {
+                event += (event.length > 0 ? "," : "") + $(this).find("event").text() + ";" ($(this).find("event").attr("chance") ? $(this).find("event").text() : "100");
+            });
             buttons = $(this).find("buttons").text();
             if($(buttons).find("event").length > 0 && $(buttons).find("event").attr("id").length > 0) { but += (but.length > 0 ? "," : "") + "event;" + $(buttons).find("event").attr("id") + ";" + $(buttons).find("event").text(); }
             if($(buttons).find("travel").length > 0 && $(buttons).find("travel").attr("id").length > 0) { but += (but.length > 0 ? "," : "") + "travel;" + $(buttons).find("travel").attr("id") + ";" + $(buttons).find("travel").text(); }
@@ -176,7 +188,7 @@ function xmlparser(txt) {
                 }
             });
             if(index === 0) {
-                Items.set(parseInt($(this).find("id").text()), $(this).find("name").text(), $(this).find("price").text(), (use === "undefined" ? null : use));
+                Items.set(parseInt($(this).find("id").text()), $(this).find("name").text(), $(this).find("price").text(), (use === "undefined" ? null : use), (event === "undefined" ? null: event));
             } else if (index === 1) {
                     $(this).find("discoverable id").each(function (x, v) {
                         discoverables += (discoverables.length > 0 ? "," : "") + $(v).text();
@@ -185,9 +197,9 @@ function xmlparser(txt) {
                     enemies += (enemies.length > 0 ? "," : "") + $(v).text();
                 });
                 
-                Locations.set(parseInt($(this).find("id").text()), $(this).find("name").text(), $(this).find("onTravel").text(), $(this).find("threat").text() ,(discoverables.length > 0 ? null : discoverables), (enemies.length > 0 ? null : enemies));
+                Locations.set(parseInt($(this).find("id").text()), $(this).find("name").text(), $(this).find("onTravel").text(), $(this).find("threat").text() ,(discoverables.length > 0 ? null : discoverables), (enemies.length > 0 ? null : enemies), (event === "undefined" ? null: event));
             } else if (index === 2) {
-                Enemies.set(parseInt($(this).find("id").text()), $(this).find("name").text(), $(this).find("health").text(), $(this).find("damage").text());
+                Enemies.set(parseInt($(this).find("id").text()), $(this).find("name").text(), $(this).find("health").text(), $(this).find("damage").text(), (event === "undefined" ? null: event));
             } else if (index === 3) {
                 Events.set(parseInt($(this).find("id").text()), $(this).find("title").text(), $(this).find("text").text(), (use ? use : null), (but ? but : null), (req ? req : null));
             }
