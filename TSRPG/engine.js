@@ -6,13 +6,13 @@ var Items = (function () {
     item.event = [];
     return {
         get: function(key, index) {
-            key = parseInt(key);
-            if(key === "NaN" || itemName.key === "undefined") {
+            index = parseInt(index);
+            if(index === "NaN" || item[key][index] === "undefined") {
                 return false;
             }
-            return item.key[index];
+            return item[key][index];
         },
-        set: function(id, name, price, use) {
+        set: function(id, name, price, use, event) {
             id = parseInt(id);
             if(id === "NaN" || id === "undefined" || name.length < 1) {
                 return false;
@@ -40,10 +40,10 @@ var Enemies = (function () {
     return {
         get: function(key, index) {
             index = parseInt(index);
-            if(index === "NaN" || enemy[key] === "undefined") {
+            if(index === "NaN" || enemy[key][index] === "undefined") {
                 return false;
             }
-            return enemy.key[index];
+            return enemy[key][index];
         },
         set: function(id, name, health, damage, event) {
             id = parseInt(id);
@@ -73,10 +73,10 @@ var Locations = (function () {
     return {
         get: function(key, index) {
             index = parseInt(index);
-            if(index === "NaN" || location[key] === "undefined") {
+            if(index === "NaN" || location[key][index] === "undefined") {
                 return false;
             }
-            return location.key[index];
+            return location[key][index];
         },
         set: function(id, name, onTravel, threat, discoverables, enemies, event) {
             id = parseInt(id);
@@ -110,19 +110,21 @@ var Events = (function () {
     return {
         get: function(key, index) {
             index = parseInt(index);
-            if(index === "NaN" || event[key] === "undefined") {
+            if(index === "NaN" || event[key][index] === "undefined") {
                 return false;
             }
-            return event.key[index];
+            return event[key][index];
         },
         arr: function(key, index, divider) {
-            if(index === "NaN" || event[key] === "undefined") {
+            index = parseInt(index);
+            if(index === "NaN" || String(event[key][index]) === "undefined") {
                 return false;
             }
             if(divider === "undefined") {
                 divider = ",";
             }
-            return event.key[index].split(divider);
+
+            return String(event[key][index]).split(divider);
         },
         set: function(id, title, text, effects, buttons, requirement) {
             id = parseInt(id);
@@ -145,9 +147,10 @@ var Events = (function () {
 }());
 
 function xmlparser(txt) {
-    var itemId = [], i = 0, use, effects, discoverables, enemies, buttons, but, requirement, req, event,
-        tags = ["items item", "locations location", "enemies enemy"],
-        validreq = ["health", "mana", "strength", "stamina", "agility", "intelligence", "charisma", "libido", "energy", "lust" ,"special" ,"origin", "location", "level"];
+    var itemId = [], i = 0, use, effects, discoverables, enemies, buttons, but, requirement, req, event, placeinarr,
+        tags = ["items item", "locations location", "enemies enemy", "events event"],
+        validreq = ["health", "mana", "strength", "stamina", "agility", "intelligence", "charisma", "libido", "energy", "lust" ,"special" ,"origin", "location", "level"],
+        validbuttons = ["event", "travel"];
     $.each(tags, function (index, value) {
     itemId = [];
         $(txt).find(value).each(function() {
@@ -175,11 +178,8 @@ function xmlparser(txt) {
             if($(effects).find("libido").length > 0) { use += (use.length > 0 ? "," : "") + "lb;" + $(effects).find("libido").text(); }
 
             $(this).find("event").each(function(x, v) {
-                event += (event.length > 0 ? "," : "") + $(this).find("event").text() + ";" ($(this).find("event").attr("chance") ? $(this).find("event").text() : "100");
+                event += (event.length > 0 ? "," : "") + $(this).find("event").text() + ";" + ($(this).find("event").attr("chance") ? $(this).find("event").text() : "100");
             });
-            buttons = $(this).find("buttons").text();
-            if($(buttons).find("event").length > 0 && $(buttons).find("event").attr("id").length > 0) { but += (but.length > 0 ? "," : "") + "event;" + $(buttons).find("event").attr("id") + ";" + $(buttons).find("event").text(); }
-            if($(buttons).find("travel").length > 0 && $(buttons).find("travel").attr("id").length > 0) { but += (but.length > 0 ? "," : "") + "travel;" + $(buttons).find("travel").attr("id") + ";" + $(buttons).find("travel").text(); }
 
             requirement = $(this).find("requirement").text();
             $.each(validreq, function(x, v) {
@@ -201,6 +201,13 @@ function xmlparser(txt) {
             } else if (index === 2) {
                 Enemies.set(parseInt($(this).find("id").text()), $(this).find("name").text(), $(this).find("health").text(), $(this).find("damage").text(), (event === "undefined" ? null: event));
             } else if (index === 3) {
+                buttons = $(this).find("buttons button");
+                $.each(buttons, function() {
+                    placeinarr = $.inArray($(this).attr("type"), validbuttons);
+                    if(placeinarr !== -1) {
+                        but += (but.length > 0 ? "," : "") + validbuttons[placeinarr] + ";" + $(this).attr("id") + ";" + $(this).text();
+                    }
+                });
                 Events.set(parseInt($(this).find("id").text()), $(this).find("title").text(), $(this).find("text").text(), (use ? use : null), (but ? but : null), (req ? req : null));
             }
         });
@@ -455,40 +462,42 @@ function sortSparseArray(arr) {
 
 function event(id) {
     if(Events.get("title", id) === false) {
-        return;
+        return false;
     }
+    var tmp;
     $.each(Events.arr("requirement", id, ";"), function(index, value) {
         switch(value[2]) {
             case "=":
                 if(Player.get(value[0]) === value[1]) {
-                    return;
+                    return false;
                 }
             break;
             case ">":
                 if(value[1] < Player.get(value[0])) {
-                    return;
+                    return false;
                 }
             break;
             case "<":
                 if(value[1] > Player.get(value[0])) {
-                    return;
+                    return false;
                 }
             break;
             case ">=":
                 if(value[1] <= Player.get(value[0])) {
-                    return;
+                    return false;
                 }
             break;
             case "<=":
                 if(value[1] >= Player.get(value[0])) {
-                    return;
+                    return false;
                 }
             break;
         }
     });
-    $("#content").html("<h1>" + Events.get("title", id) + "</h1>" + Events.get("text", id));
+    $("#content").html("<h2>" + Events.get("title", id) + "</h2>" + Events.get("text", id));
     if(Events.get("buttons", id)) {
-        
+        tmp = Events.get("buttons", id).split(";");
+        action_bar(tmp[0] + ";" + tmp[1], tmp[2]);
     }
 }
 
@@ -678,8 +687,8 @@ function initiate() {
 function item_description(id) {
     "use strict";
     var out = "";
-    if (Items.get(id, "use") !== null){
-        $.each(Items.get(id, "use").split(","), function (index, value) {
+    if (Items.get("use", id) !== null){
+        $.each(Items.get("use", id).split(","), function (index, value) {
             switch(value.split(";")[0]) {
                 case 'hp':
                     out += "Restores " + value.split(";")[1] * (player.get("special")===12 ? 1.25 : 1) + " health.";
@@ -702,7 +711,7 @@ function use_item(id) {
     if ($("#small_window").css("display")==="block"){
         overlay("#small_window");
     }
-    $.each(Items.get(id, "use").split(","), function (index, value) {
+    $.each(Items.get("use", id).split(","), function (index, value) {
         switch(value.split(";")[0]) {
             case 'hp':
                 player_hp(value.split(";")[1] * (player.get("special")===12 ? 1.25 : 1));
@@ -936,6 +945,11 @@ function explore() {
 
 function go2location(id) {
     "use strict";
+    if(Locations.get("event", id) !== "undefined") {
+        if(event(Locations.get("event", id)) !== false) {
+            return;
+        }
+    }
     if (parseInt(player.get("energy"), 10) - 8 < 0) {
         popup(2);
         return;
@@ -1306,7 +1320,7 @@ function vendor(id) {
     }
     var tmp = "<h2>" + vendor_name[id] + "</h2><span class='notice'>" + vendor_dialogue[id] + "</span><p/>";
     $.each(vendor_items[id], function (index, value) {
-        tmp += "<div onclick='buy_item(" +value+ ");' class='tradesquare'><span>" + Items.get(value)[0] + "</span><span class='price'>$" + get_price(Items.get(value, "price")) + "</span><span class='desc'>" + item_description(value) + "</span></div>";
+        tmp += "<div onclick='buy_item(" +value+ ");' class='tradesquare'><span>" + Items.get("price", value) + "</span><span class='price'>$" + get_price(Items.get("price", value)) + "</span><span class='desc'>" + item_description(value) + "</span></div>";
     });
     $("#content").html(tmp);
     action_bar("5;" +id+ ",4");
@@ -1391,7 +1405,7 @@ function show_inventory(update) {
     }
     if (player.len("inventory") > 0) {
         $.each(player.arr("inventory", ","), function (index, value) {
-            out += "<div onclick='use_item(\"" +value.split(";")[0]+ "\")' class='list-object' title='" +item_description(value.split(";")[0])+ "'>" + (value.split(";")[1]?value.split(";")[1]:1) + " " + Items.get(value.split(";")[0], "name") + "<span class='right'>" +item_description(value.split(";")[0])+ "</span></div>";
+            out += "<div onclick='use_item(\"" +value.split(";")[0]+ "\")' class='list-object' title='" +item_description(value.split(";")[0])+ "'>" + (value.split(";")[1]?value.split(";")[1]:1) + " " + Items.get("name", value.split(";")[0]) + "<span class='right'>" +item_description(value.split(";")[0])+ "</span></div>";
         });
     }
     if (!update) {
@@ -1465,15 +1479,17 @@ function handleDragOver(evt) {
 
 function action_bar(x, buttonname) {
     "use strict";
-    var tmp = x.split(",");
+    var tmp = x.split(","), out="";
     if (buttonname) {
         buttonname = buttonname.split(",");
     }else{
         buttonname = null;
     }
-    var buttons = ["Travel", "vendor", "dicejack", "dwelling", "Sell Items", "Buy Items", "Sleep", "Leave", "Combat", "Gabmle"],
-    buttons_function_name = ["explore", "vendor", "dicejack", "buy_dwelling", "sell_item_menu", "vendor", "player_sleep", "go2base", "combat", "gamble"];
-   var out="";
+    var buttons = ["Travel", "vendor", "dicejack", "dwelling", "Sell Items", "Buy Items", "Sleep", "Leave", "Combat", "Gabmle", "Travel", "Event"],
+    buttons_function_name = ["explore", "vendor", "dicejack", "buy_dwelling", "sell_item_menu", "vendor", "player_sleep", "go2base", "combat", "gamble", "go2location", "event"];
+   if(typeof String(tmp).split(";")[0] !== "number") {
+        tmp[0] = $.inArray(String(tmp).split(";")[0], buttons_function_name) + ";" + String(tmp).split(";")[1];
+    }
    $.each(tmp, function (index, value) {
         out += "<button onclick='" + buttons_function_name[value.split(";")[0]] + "(" + (value.split(";")[1]?value.split(";")[1]:"") + ")'>" + (buttonname?buttonname[index]:buttons[value.split(";")[0]]) + "</button>";
     });

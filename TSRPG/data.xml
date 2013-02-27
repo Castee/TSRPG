@@ -107,5 +107,13 @@
 		</enemy>
 	</enemies>
 	<events>
+		<event>
+			<id>1</id>
+			<title>Test</title>
+			<text>LOL</text>
+			<buttons>
+				<button type='event' id="1">LOL</button>
+			</buttons>
+		</event>
 	</events>
 </data>
