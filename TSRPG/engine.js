@@ -18,7 +18,7 @@ var Items = (function () {
                 return false;
             }
             item.name[id] = name;
-            if(typeof price === "number") {
+            if(price) {
                 item.price[id] = price;
             }
             if(use) {
@@ -70,6 +70,8 @@ var Locations = (function () {
     location.onTravel = [];
     location.enemies = [];
     location.event = [];
+    location.discover = [];
+    location.master = [];
     return {
         get: function(key, index) {
             index = parseInt(index);
@@ -78,18 +80,24 @@ var Locations = (function () {
             }
             return location[key][index];
         },
-        set: function(id, name, onTravel, threat, discoverables, enemies, event) {
+        set: function(id, name, onTravel, threat, discoverables, enemies, event, master) {
             id = parseInt(id);
             threat = parseInt(threat);
             if(id === "NaN" || id === "undefined" || name.length < 1 || onTravel === "undefined" || threat === "NaN") {
                 return false;
             }
             location.name[id] = name;
-            location.description[id] = description;
+            location.description[id] = onTravel;
             location.threat[id] = threat;
-            if(discoverables) {
-                location.discoverables[id] = discoverables;
+
+            if(master) {
+                location.master[id] = master;
             }
+
+            if(discoverables) {
+                location.discover[id] = discoverables;
+            }
+
             if(enemies) {
                 location.enemies[id] = enemies;
             }
@@ -147,8 +155,8 @@ var Events = (function () {
 }());
 
 function xmlparser(txt) {
-    var itemId = [], i = 0, use, effects, discoverables, enemies, buttons, but, requirement, req, event, placeinarr,
-        tags = ["items item", "locations location", "enemies enemy", "events event"],
+    var itemId = [], i = 0, use, effects, discoverables, enemies, but, temp, req, event, placeinarr,
+        tags = ["items item", "locations location", "data > enemies enemy", "data > events event"],
         validreq = ["health", "mana", "strength", "stamina", "agility", "intelligence", "charisma", "libido", "energy", "lust" ,"special" ,"origin", "location", "level"],
         validbuttons = ["event", "travel"];
     $.each(tags, function (index, value) {
@@ -177,32 +185,33 @@ function xmlparser(txt) {
             if($(effects).find("experience").length > 0) { use += (use.length > 0 ? "," : "") + "xp;" + $(effects).find("experience").text(); }
             if($(effects).find("libido").length > 0) { use += (use.length > 0 ? "," : "") + "lb;" + $(effects).find("libido").text(); }
 
-            $(this).find("event").each(function(x, v) {
-                event += (event.length > 0 ? "," : "") + $(this).find("event").text() + ";" + ($(this).find("event").attr("chance") ? $(this).find("event").text() : "100");
+            $(this).find("events event").each(function(x, v) {
+                event += (event.length > 0 ? "," : "") + $(v).text() + ";" + ($(v).attr("chance") ? $(v).attr("chance") : "100");
             });
 
-            requirement = $(this).find("requirement").text();
+            temp = $(this).find("requirement").text();
             $.each(validreq, function(x, v) {
-                if($(requirement).find(v).length > 0) {
-                    req += (req.length > 0 ? "," : "") + v + ";" + $(requirement).find(v).text() + ($(requirement).find(v).attr("operator") ? $(requirement).find(v).attr("operator") : "=");
+                if($(temp).find(v).length > 0) {
+                    req += (req.length > 0 ? "," : "") + v + ";" + $(temp).find(v).text() + ($(temp).find(v).attr("operator") ? $(temp).find(v).attr("operator") : "=");
                 }
             });
+
             if(index === 0) {
                 Items.set(parseInt($(this).find("id").text()), $(this).find("name").text(), $(this).find("price").text(), (use === "undefined" ? null : use), (event === "undefined" ? null: event));
             } else if (index === 1) {
-                    $(this).find("discoverable id").each(function (x, v) {
-                        discoverables += (discoverables.length > 0 ? "," : "") + $(v).text();
-                    });
-                $(this).find("enemies id").each(function (x, v) {
+                $(this).find("discoverable discover").each(function (x, v) {
+                    discoverables += (discoverables.length > 0 ? "," : "") + $(v).text();
+                });
+                $(this).find("enemies enemy").each(function (x, v) {
                     enemies += (enemies.length > 0 ? "," : "") + $(v).text();
                 });
                 
-                Locations.set(parseInt($(this).find("id").text()), $(this).find("name").text(), $(this).find("onTravel").text(), $(this).find("threat").text() ,(discoverables.length > 0 ? null : discoverables), (enemies.length > 0 ? null : enemies), (event === "undefined" ? null: event));
+                Locations.set(parseInt($(this).find("id").text()), $(this).find("name").text(), $(this).find("onTravel").text(), $(this).find("threat").text() ,(discoverables.length < 0 ? null : discoverables), (enemies.length < 0 ? null : enemies), (event === "undefined" ? null: event), ($(this).find("master").text() ? $(this).find("master").text() : null) );
             } else if (index === 2) {
                 Enemies.set(parseInt($(this).find("id").text()), $(this).find("name").text(), $(this).find("health").text(), $(this).find("damage").text(), (event === "undefined" ? null: event));
             } else if (index === 3) {
-                buttons = $(this).find("buttons button");
-                $.each(buttons, function() {
+                temp = $(this).find("buttons button");
+                $.each(temp, function() {
                     placeinarr = $.inArray($(this).attr("type"), validbuttons);
                     if(placeinarr !== -1) {
                         but += (but.length > 0 ? "," : "") + validbuttons[placeinarr] + ";" + $(this).attr("id") + ";" + $(this).text();
@@ -624,19 +633,6 @@ function overlay(element) {
     }
 }
 
-function show_desc(id, element) {
-    "use strict";
-    var pos = $(element).offset();
-    pos.top += 44;
-    $('#description').show().css({
-        left: pos.left + "px",
-        top: pos.top + "px"
-    }).html(specialDesc[id]);
-    $(element).mouseout(function () {
-        $('#description').hide();
-    });
-}
-
 function ng_slide(page) {
     "use strict";
     $("#ng_slider").css({ "left": "-" + (page * 1200) + "px" });
@@ -848,7 +844,7 @@ var NewGame = function () {
         $('#new_character').fadeOut(400);
         $('#main').fadeIn(600);
         $('#content').html("<span class='longtext'>" + story[0] + "..." + startingtext[atr.origin] + "</div>");
-        action_bar("7");
+        action_bar("5");
         player.savegame();
         initiate();
         }
@@ -932,23 +928,29 @@ function explore() {
     
     $.each(player.arr("locationsdiscovered", ","), function (index, value) {
         if (location_place_master[value]){
-            travel += "<div onclick='go2location(" +value+ ")' class='list-object'>" +location_name[value]+ "</div>";
+            travel += "<div onclick='go2location(" + value + ")' class='list-object'>" + Locations.get("name", value) + "</div>";
         }else{
-             exploration += "<div onclick='go2location(" +value+ ")' class='list-object'>" +location_name[value]+ "</div>";
+             exploration += "<div onclick='go2location(" + value + ")' class='list-object'>" + Locations.get("name", value) + "</div>";
         }
     });
     
-    tmp += "<div class='list-object-container '><h3>Exploration</h3>" +exploration + "</div>";
-    tmp += "<div class='list-object-container '><h3>Travel</h3>" +travel+ "</div>";
+    tmp += "<div class='list-object-container '><h3>Exploration</h3>" + exploration + "</div>";
+    tmp += "<div class='list-object-container '><h3>Travel</h3>" + travel + "</div>";
     $("#content").html(tmp);
 }
 
 function go2location(id) {
     "use strict";
-    if(Locations.get("event", id) !== "undefined") {
-        if(event(Locations.get("event", id)) !== false) {
-            return;
-        }
+    var temp;
+    if(Locations.get("event", id)) {
+        temp = shuffle(Locations.get("event", id).split(","));
+        $.each(temp, function(index, value) {
+            if(Math.random() * value.split(";")[1] > Math.random() * 100) {
+                if(event(value) !== false) {
+                    return;
+                }
+            }
+        });
     }
     if (parseInt(player.get("energy"), 10) - 8 < 0) {
         popup(2);
@@ -958,19 +960,19 @@ function go2location(id) {
         i;
     clock(tmp);
     player.set("location", id);
-    if (5*tmp>player.get("energy")){ tmp = player.get("energy")/10; }
-    energy(-5*tmp);
-    if (Math.random()*location_threat[id]+25>Math.random()*100) {
+    if (5 * tmp>player.get("energy")){ tmp = player.get("energy") / 10; }
+    energy(-5 * tmp);
+    if (Math.random() * Locations.get("threat", id) > Math.random() * 100) {
         combat(); return;
     }
-    var out = "<h2>" +location_name[id]+ "</h2><p>" +location_desc[id]+ "</p>";
-    var randomlyselecteddiscovery = false;
-    if (location_discoverable[id]){
+    var out = "<h2>" + Locations.get("name", id) + "</h2>dfgfdgfdgfd<p>" + Locations.get("description", id) + "</p>",
+        randomlyselecteddiscovery = false;
+    if (Locations.get("discover", id)){
         var chanceofdiscoveryarray = [];
         var chanceofdiscoverysum = 0;
-        $.each(location_discoverable[id].split(","), function (index, value) {
+        $.each(Locations.get("discover", id).split(","), function (index, value) {
             if ($.inArray(value, player.arr("locationsdiscovered", ","))===-1) {
-                chanceofdiscoverysum += (location_rarity[value]||location_rarity[value]===0?(location_rarity[value]>100?100:location_rarity[value]):10)+1;
+                chanceofdiscoverysum += (value.split(";")||value.split(";")===0?(value.split(";")?100:value.split(";")):10)+1;
                 chanceofdiscoveryarray[index] = chanceofdiscoverysum;
             }
         });    
@@ -979,19 +981,19 @@ function go2location(id) {
             for(i=0;i<chanceofdiscoveryarray.length;i++) {
             if (n<chanceofdiscoveryarray[i]){ randomlyselecteddiscovery = i; break; }
         }
-        player.add("locationsdiscovered", location_discoverable[id].split(",")[randomlyselecteddiscovery]);
+        player.add("locationsdiscovered", Locations.get("discover", id).split(",")[randomlyselecteddiscovery]);
         out += "After " +tmp+ " hour(s) of exploring you spot something. ";
-        out += "<strong>You have discovered " +location_name[location_discoverable[id].split(",")[randomlyselecteddiscovery]]+ "</strong>.";
+        out += "<strong>You have discovered " + Locations.get("name", randomlyselecteddiscovery) + "</strong>.";
         }
     }
-    if (!randomlyselecteddiscovery&&!location_place_master[id]) {
-        out += "After scouering around for " +tmp+ " hour(s), you decide to head back to your camp.";
+    if (!randomlyselecteddiscovery&&!Locations.get("master", id)) {
+        out += "After scouering around for " + tmp + " hour(s), you decide to head back to your camp.";
     }
-    if (location_place_master[id]) {
-        out += location_desc[id];
-        action_bar("1;0,7");
+    if (Locations.get("master", id)) {
+        out += Locations.get("description", id);
+        action_bar("0;0,6");
     }else{
-        action_bar("7");
+        action_bar("6");
     }
     $("#content").html(out);
 }
@@ -999,7 +1001,7 @@ function go2base() {
    "use strict";
     player.set("location", -1);
     var out = "<h2>Camp</h2>";
-    action_bar("6,0");
+    action_bar("5,0");
     $("#content").html(out);
 }
 
@@ -1017,7 +1019,7 @@ function combat(action, enemy_id) {
         c.level = player.get("level");
         c.hp = Math.floor((enemy_basehp[c.id]*(c.level*0.25))*(1+Math.random()*0.1));
         c.hp_max = c.hp;
-        action_bar("8;1,8;5", "Attack,Escape");
+        action_bar("7;1,7;5", "Attack,Escape");
         var out = "<h2>" +c.level+ " " +gender_name[c.gender]+ " " +enemy_name[c.id]+ "<span class='right'><div id='chealth' class='meter_holder chealth'><div class='text'></div><div class='meter'></div></div></span></h2><div id='combat-log'></div>";
         $("#content").html(out);
         meter('#chealth', c.hp, c.hp_max, enemy_name[c.id]);
@@ -1025,7 +1027,7 @@ function combat(action, enemy_id) {
     if (player.get("energy") < 1 && c.hp > 1){ c.combatlog += "You are so exhausted that you simply cannot muster anymore resistance. You are now at the whim of " +enemy_name[c.id]+ "."; action=4; }
         switch(action) {
         case 0:
-            action_bar("8;1,8;5", "Attack,Escape");
+            action_bar("7;1,7;5", "Attack,Escape");
         break;
         case 1:
             var player_damage = parseInt(player.get("strength"), 10);
@@ -1058,7 +1060,7 @@ function combat(action, enemy_id) {
             c.hp_max = -1;
             c.gender = -1;
             c.level = -1;
-            action_bar("7");
+            action_bar("6");
         break;
         case 4:
             var passouttime = Math.floor(Math.random()*12);
@@ -1066,7 +1068,7 @@ function combat(action, enemy_id) {
             c.combatlog += "You pass out. You wake up " +passouttime+ " hour(s) later. Missing $" +coinlost+ ". You head back to camp, tail between your legs.<br/>";
             player.change("money", -coinlost);
             player_sleep(passouttime);
-            action_bar("7");
+            action_bar("6");
             c.id = -1;
             c.hp = -1;
             c.hp_max = -1;
@@ -1082,10 +1084,10 @@ function combat(action, enemy_id) {
                 c.hp_max = -1;
                 c.gender = -1;
                 c.level = -1;
-                action_bar("7");
+                action_bar("5");
             }else{
                 c.combatlog += "You try to run, but ultimately it's just a waste of breath. You quickly find yourself engaged in combat again.<br/>";
-                action_bar("8;2", "Next");
+                action_bar("6;2", "Next");
             }
         break;
     }
@@ -1246,13 +1248,13 @@ function startgame() {
         $('#cname').keyup(function (event) {
             document.getElementById("cname").value = document.getElementById("cname").value.replace(/[^A-Za-z]/g, "");
             setTimeout(function () {
-                ng.set("name", $('#cname').val());
+                ng.set("name", $('#cname').val().text());
             }, 10);
         });
         $('#surname').keyup(function () {
             document.getElementById("surname").value = document.getElementById("surname").value.replace(/[^A-Za-z]/g, "");
             setTimeout(function () {
-                ng.set("surname", $('#cname').val());
+                ng.set("surname", $('#cname').val().text());
             }, 10);
         });
     }
@@ -1320,16 +1322,16 @@ function vendor(id) {
     }
     var tmp = "<h2>" + vendor_name[id] + "</h2><span class='notice'>" + vendor_dialogue[id] + "</span><p/>";
     $.each(vendor_items[id], function (index, value) {
-        tmp += "<div onclick='buy_item(" +value+ ");' class='tradesquare'><span>" + Items.get("price", value) + "</span><span class='price'>$" + get_price(Items.get("price", value)) + "</span><span class='desc'>" + item_description(value) + "</span></div>";
+        tmp += "<div onclick='buy_item(" +value+ ");' class='tradesquare'><span>" + Items.get("name", value) + "</span><span class='price'>$" + get_price(Items.get("price", value)) + "</span><span class='desc'>" + item_description(value) + "</span></div>";
     });
     $("#content").html(tmp);
-    action_bar("5;" +id+ ",4");
+    action_bar("4;" +id+ ",3");
 }
 function gamble(action) {
     "use strict";
     var out = "<h2>Gamble</h2>";
         out += "All of the prices are <strong>" +get_price(player.get("level")*50)+ "</strong>";
-        action_bar("9;0,9;1,9;2,9;3,9;4,7", "Buy Weapon,Buy Chest piece,Buy Boots,Buy Helmet,Buy Gloves,Leave");
+        action_bar("8;0;Buy Weapon,8;1;Buy Chest piece,8;2;Buy Boots,8;3;Buy Helmet,8;4;Buy Gloves,6");
         var attributes_names = ["Strength", "Stamina", "Agility", "Charisma", "Intelligence", "Damage"];
     if (action || action === 0) {
         var tempcustomitem = generate_item(action);
@@ -1341,8 +1343,8 @@ function gamble(action) {
 function buy_item(id, amount) {
     "use strict";
     if (!amount){ amount = 1; }
-    if (get_price(item_price[id]*amount)>player.get("money")){ popup(1); return; }
-    player.change("money",-get_price(item_price[id]));
+    if (get_price(Items.get("price", id)*amount)>player.get("money")){ popup(1); return; }
+    player.change("money",-get_price(Items.get("price", id)));
     editinventory(id, amount);
 }
 function sell_item_menu() {
@@ -1350,7 +1352,7 @@ function sell_item_menu() {
     var out="<h2>Sell Items</h2>";
     if (player.len("inventory") <= 0){ out+="Your inventory is empty!"; }else{
         $.each(player.arr("inventory", ","), function (index, value) {
-            out += "<div onclick='sell_item(" +value.split(";")[0]+ ")' class='tradesquare'><span>" + Items.get(value.split(";")[0], "name") + "</span><span class='price'>$" + get_price(Items.get(value.split(";")[0], "price"), true) + "<span class='right'>Amount: " + value.split(";")[1] + "</span></span><span class='desc'>" + item_description(value.split(";")[0]) + "</span></div>";
+            out += "<div onclick='sell_item(" +value.split(";")[0]+ ")' class='tradesquare'><span>" + Items.get("name", value.split(";")[0]) + "</span><span class='price'>$" + get_price(Items.get("price", value.split(";")[0]), true) + "<span class='right'>Amount: " + value.split(";")[1] + "</span></span><span class='desc'>" + item_description(value.split(";")[0]) + "</span></div>";
         });
     }
     $("#content").html(out);
@@ -1358,7 +1360,7 @@ function sell_item_menu() {
 function sell_item(id, amount) {
     "use strict";
     if (!amount){ amount = 1; }
-    player.change("money", get_price(item_price[id]));
+    player.change("money", get_price(Items.get("price", id)));
     editinventory(id, amount, true);
     sell_item_menu();
 }
@@ -1477,21 +1479,16 @@ function handleDragOver(evt) {
     evt.dataTransfer.dropEffect = 'copy';
 }
 
-function action_bar(x, buttonname) {
+function action_bar(x) {
     "use strict";
-    var tmp = x.split(","), out="";
-    if (buttonname) {
-        buttonname = buttonname.split(",");
-    }else{
-        buttonname = null;
-    }
-    var buttons = ["Travel", "vendor", "dicejack", "dwelling", "Sell Items", "Buy Items", "Sleep", "Leave", "Combat", "Gabmle", "Travel", "Event"],
-    buttons_function_name = ["explore", "vendor", "dicejack", "buy_dwelling", "sell_item_menu", "vendor", "player_sleep", "go2base", "combat", "gamble", "go2location", "event"];
-   if(typeof String(tmp).split(";")[0] !== "number") {
-        tmp[0] = $.inArray(String(tmp).split(";")[0], buttons_function_name) + ";" + String(tmp).split(";")[1];
-    }
-   $.each(tmp, function (index, value) {
-        out += "<button onclick='" + buttons_function_name[value.split(";")[0]] + "(" + (value.split(";")[1]?value.split(";")[1]:"") + ")'>" + (buttonname?buttonname[index]:buttons[value.split(";")[0]]) + "</button>";
+    var out="",
+        buttons = ["Travel", "vendor", "dwelling", "Sell Items", "Buy Items", "Sleep", "Leave", "Combat", "Gabmle", "Travel", "Event"],
+        buttons_function_name = ["explore", "vendor", "buy_dwelling", "sell_item_menu", "vendor", "player_sleep", "go2base", "combat", "gamble", "go2location", "event"];
+    $.each(x.split(","), function (index, value) {
+        if(typeof parseInt(value.split(";")[0]) !== "number") {
+            value = $.inArray(String(value).split(";")[0], buttons_function_name) + (String(value).split(";")[1] ? ";" + String(value).split(";")[1] : "") + (String(value).split(";")[2] ? ";" + String(value).split(";")[2] : "");
+        }
+        out += "<button onclick='" + buttons_function_name[value.split(";")[0]] + "(" + (value.split(";")[1] ? value.split(";")[1] : "") + ")'>" + (value.split(";")[2] ? value.split(";")[2] : buttons[value.split(";")[0]]) + "</button>";
     });
     $("#action_control").html(out);
 }

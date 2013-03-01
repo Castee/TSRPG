@@ -84,18 +84,88 @@
 	</items>
 	<locations>
 		<location>
-			<id>1</id>
+			<id>0</id>
 			<name>Grassland</name>
 			<onTravel>Grass reach as far as your eyes can see.</onTravel>
 			<threat>50</threat>
 			<enemies>
-				<id>2</id>
-				<id>8</id>
+				<enemy>2</enemy>
+				<enemy>8</enemy>
 			</enemies>
 			<discoverable>
-				<id>2</id>
-				<id>8</id>
+				<discover>2</discover>
+				<discover>8</discover>
 			</discoverable>
+			<events>
+				<event>1</event>
+			</events>
+		</location>
+		<location>
+			<id>1</id>
+			<name>Desert</name>
+			<onTravel>Grass reach as far as your eyes can see.</onTravel>
+			<threat>50</threat>
+		</location>
+		<location>
+			<id>2</id>
+			<name>March</name>
+			<onTravel>Grass reach as far as your eyes can see.</onTravel>
+			<threat>50</threat>
+		</location>
+		<location>
+			<id>3</id>
+			<name>Mountains</name>
+			<onTravel>Grass reach as far as your eyes can see.</onTravel>
+			<threat>50</threat>
+			<discoverable>
+				<discover>4</discover>
+			</discoverable>
+		</location>
+		<location>
+			<id>4</id>
+			<name>Valley</name>
+			<onTravel>Grass reach as far as your eyes can see.</onTravel>
+			<threat>50</threat>
+		</location>
+		<location>
+			<id>5</id>
+			<name>Beach</name>
+			<onTravel>Grass reach as far as your eyes can see.</onTravel>
+			<threat>50</threat>
+		</location>
+		<location>
+			<id>6</id>
+			<name>Evergreen forest</name>
+			<onTravel>Grass reach as far as your eyes can see.</onTravel>
+			<threat>50</threat>
+		</location>
+		<location>
+			<id>7</id>
+			<name>Forest</name>
+			<onTravel>Grass reach as far as your eyes can see.</onTravel>
+			<threat>50</threat>
+			<discoverable>
+				<discover>6</discover>
+			</discoverable>
+		</location>
+		<location>
+			<id>8</id>
+			<name>Plains</name>
+			<onTravel>Grass reach as far as your eyes can see.</onTravel>
+			<threat>50</threat>
+		</location>
+		<location>
+			<id>9</id>
+			<name>City</name>
+			<onTravel>Grass reach as far as your eyes can see.</onTravel>
+			<threat>0</threat>
+		</location>
+		<location>
+			<id>10</id>
+			<master>9</master>
+			<name>City</name>
+			<onTravel>Grass reach as far as your eyes can see.</onTravel>
+			<threat>0</threat>
 		</location>
 	</locations>
 	<enemies>
