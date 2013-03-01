@@ -26,8 +26,8 @@ locations
       id - required
     discoverables
       id - required
-    event
-      id - required
+    events
+      event - Contains the ID of the event to trigger
       /* Can have 'Chance' attribute with a value of 1-100 being the percent of it triggering. (Don't include %)  */
       /* Triggered on going to the location */
 
@@ -37,8 +37,8 @@ Enemies
     name - required
     damage - required
     health - required
-    event
-      id - required
+    events
+      event - Contains the ID of the event to trigger
       /* Can have 'Chance' attribute with a value of 1-100 being the percent of it triggering. (Don't include %)  */
       /* Triggered on enemy death */
 
