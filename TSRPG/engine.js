@@ -1,162 +1,32 @@
-var Items = (function () {
-    var item = [];
-    item.name = [];
-    item.price = [];
-    item.use = [];
-    item.event = [];
-    return {
+var Library = (function() {
+    var lib = ["event_title", "event_text", "event_effects", "event_buttons", "event_requirements", "location_name", "location_description",
+               "location_threat", "location_ontravel", "location_enemies", "location_event", "location_discover", "location_master",
+               "enemy_name", "enemy_health", "enemy_damage", "enemy_event", "item_name", "item_price", "item_event", "item_use"];
+    $.each(lib, function(index, value) {
+        lib[value] = [];
+    });
+    return{
         get: function(key, index) {
-            index = parseInt(index);
-            if(index === "NaN" || item[key][index] === "undefined") {
-                return false;
+            if(index === "undefined" || lib[key][index] === "undefined") {
+                return "undefined";
             }
-            return item[key][index];
+            return lib[key][index];
         },
-        set: function(id, name, price, use, event) {
+        set: function(key, id, value) {
             id = parseInt(id);
-            if(id === "NaN" || id === "undefined" || name.length < 1) {
+            key = String(key);
+            value = String(value);
+            if(id === "undefined" || id === "NaN" || key === "undefined" || value === "undefined") {
                 return false;
             }
-            item.name[id] = name;
-            if(price) {
-                item.price[id] = price;
-            }
-            if(use) {
-                item.use[id] = use;
-            }
-            if(event) {
-                item.event[id] = event;
-            }
+            lib[key][id] = value;
         }
-    };
-}());
-
-var Enemies = (function () {
-    var enemy = [];
-    enemy.name = [];
-    enemy.damage = [];
-    enemy.health = [];
-    enemy.event = [];
-    return {
-        get: function(key, index) {
-            index = parseInt(index);
-            if(index === "NaN" || enemy[key][index] === "undefined") {
-                return false;
-            }
-            return enemy[key][index];
-        },
-        set: function(id, name, health, damage, event) {
-            id = parseInt(id);
-            health = parseInt(health);
-            damage = parseInt(damage);
-            if(id === "NaN" || id === "undefined" || name.length < 1 || health === "NaN" || damage === "NaN") {
-                return false;
-            }
-            enemy.name[id] = name;
-            enemy.damage[id] = damage;
-            enemy.health[id] = health;
-            if(event) {
-                enemy.event[id] = event;
-            }
-        }
-    };
-}());
-
-var Locations = (function () {
-    var location = [];
-    location.name = [];
-    location.description = [];
-    location.threat = [];
-    location.onTravel = [];
-    location.enemies = [];
-    location.event = [];
-    location.discover = [];
-    location.master = [];
-    return {
-        get: function(key, index) {
-            index = parseInt(index);
-            if(index === "NaN" || location[key][index] === "undefined") {
-                return false;
-            }
-            return location[key][index];
-        },
-        set: function(id, name, onTravel, threat, discoverables, enemies, event, master) {
-            id = parseInt(id);
-            threat = parseInt(threat);
-            if(id === "NaN" || id === "undefined" || name.length < 1 || onTravel === "undefined" || threat === "NaN") {
-                return false;
-            }
-            location.name[id] = name;
-            location.description[id] = onTravel;
-            location.threat[id] = threat;
-
-            if(master) {
-                location.master[id] = master;
-            }
-
-            if(discoverables) {
-                location.discover[id] = discoverables;
-            }
-
-            if(enemies) {
-                location.enemies[id] = enemies;
-            }
-            if(event) {
-                location.event[id] = event;
-            }
-        }
-    };
-}());
-
-var Events = (function () {
-    var event = [];
-    event.title = [];
-    event.text = [];
-    event.effects = [];
-    event.buttons = [];
-    event.requirement = [];
-    return {
-        get: function(key, index) {
-            index = parseInt(index);
-            if(index === "NaN" || event[key][index] === "undefined") {
-                return false;
-            }
-            return event[key][index];
-        },
-        arr: function(key, index, divider) {
-            index = parseInt(index);
-            if(index === "NaN" || String(event[key][index]) === "undefined") {
-                return false;
-            }
-            if(divider === "undefined") {
-                divider = ",";
-            }
-
-            return String(event[key][index]).split(divider);
-        },
-        set: function(id, title, text, effects, buttons, requirement) {
-            id = parseInt(id);
-            if(id === "NaN" || id === "undefined" || title.length < 1 || text === "undefined") {
-                return false;
-            }
-            event.title[id] = title;
-            event.text[id] = text;
-            if(effects) {
-                event.effects[id] = effects;
-            }
-            if(buttons) {
-                event.buttons[id] = buttons;
-            }
-            if(requirement) {
-                event.requirement[id] = requirement;
-            }
-        }
-    };
+    }
 }());
 
 function xmlparser(txt) {
-    var itemId = [], i = 0, use, effects, discoverables, enemies, but, temp, req, event, placeinarr,
-        tags = ["items item", "locations location", "data > enemies enemy", "data > events event"],
+    var itemId = [], i = 0, use, effects, discoverables, enemies, but, temp, req, event, placeinarr, id,
+        tags = ["items item", "locations location", "data > enemies enemy", "data > events event", "data > specials special"],
         validreq = ["health", "mana", "strength", "stamina", "agility", "intelligence", "charisma", "libido", "energy", "lust" ,"special" ,"origin", "location", "level"],
         validbuttons = ["event", "travel"];
     $.each(tags, function (index, value) {
@@ -168,6 +38,7 @@ function xmlparser(txt) {
             but = "";
             req = "";
             event = "";
+            id = "";
             if($(this).find("id").text() === "") {
                 //Empty IDs are not loaded.
                 console.log("XMLparserWarning: No ID defined");
@@ -178,6 +49,7 @@ function xmlparser(txt) {
                 console.log("XMLparserWarning: Did not load duplicated ID " + $(this).find("id").text());
                 return;
             }
+            id = $(this).find("id").text();
             itemId[i++] = $(this).find("id").text();
             effects = $(this).find("effects");
             if($(effects).find("heal").length > 0) { use += (use.length > 0 ? "," : "") + "hp;" + $(effects).find("heal").text(); }
@@ -197,7 +69,10 @@ function xmlparser(txt) {
             });
 
             if(index === 0) {
-                Items.set(parseInt($(this).find("id").text()), $(this).find("name").text(), $(this).find("price").text(), (use === "undefined" ? null : use), (event === "undefined" ? null: event));
+                Library.set("item_name", id, $(this).find("name").text());
+                Library.set("item_price", id, $(this).find("price").text());
+                Library.set("item_use", id, use);
+                Library.set("item_event", id, event);
             } else if (index === 1) {
                 $(this).find("discoverable discover").each(function (x, v) {
                     discoverables += (discoverables.length > 0 ? "," : "") + $(v).text();
@@ -206,9 +81,18 @@ function xmlparser(txt) {
                     enemies += (enemies.length > 0 ? "," : "") + $(v).text();
                 });
                 
-                Locations.set(parseInt($(this).find("id").text()), $(this).find("name").text(), $(this).find("onTravel").text(), $(this).find("threat").text() ,(discoverables.length < 0 ? null : discoverables), (enemies.length < 0 ? null : enemies), (event === "undefined" ? null: event), ($(this).find("master").text() ? $(this).find("master").text() : null) );
+                Library.set("location_name", id, $(this).find("name").text());
+                Library.set("location_ontravel", id, $(this).find("onTravel").text());
+                Library.set("location_threat", id, $(this).find("threat").text());
+                Library.set("location_discover", id, discoverables);
+                Library.set("location_enemies", id, enemies);
+                Library.set("location_event", id, event);
+                Library.set("location_master", id, $(this).find("master").text());
             } else if (index === 2) {
-                Enemies.set(parseInt($(this).find("id").text()), $(this).find("name").text(), $(this).find("health").text(), $(this).find("damage").text(), (event === "undefined" ? null: event));
+                Library.set("enemy_name", id, $(this).find("name").text());
+                Library.set("enemy_health", id, $(this).find("health").text());
+                Library.set("enemy_damage", id, $(this).find("damage").text());
+                Library.set("enemy_event", id, event);
             } else if (index === 3) {
                 temp = $(this).find("buttons button");
                 $.each(temp, function() {
@@ -217,7 +101,11 @@ function xmlparser(txt) {
                         but += (but.length > 0 ? "," : "") + validbuttons[placeinarr] + ";" + $(this).attr("id") + ";" + $(this).text();
                     }
                 });
-                Events.set(parseInt($(this).find("id").text()), $(this).find("title").text(), $(this).find("text").text(), (use ? use : null), (but ? but : null), (req ? req : null));
+                Library.set("event_title", id, $(this).find("title").text());
+                Library.set("event_text", id, $(this).find("text").text());
+                Library.set("event_effects", id, use);
+                Library.set("event_buttons", id, but);
+                Library.set("event_requirements", id, req);
             }
         });
     });
@@ -282,6 +170,7 @@ var player = (function () {
     stats.equiped_chest = "";
     stats.equiped_boots = "";
     stats.equiped_hands = "";
+    stats.barter = 1;
     return {
         update_stats : function () {
             stats.healthMax = parseInt(20 * (1 + (stats.stamina * 0.1)), 10);
@@ -470,7 +359,7 @@ function sortSparseArray(arr) {
 }
 
 function event(id) {
-    if(Events.get("title", id) === false) {
+    if(Library.get("event_title", id) === false) {
         return false;
     }
     var tmp;
@@ -503,10 +392,10 @@ function event(id) {
             break;
         }
     });
-    $("#content").html("<h2>" + Events.get("title", id) + "</h2>" + Events.get("text", id));
-    if(Events.get("buttons", id)) {
-        tmp = Events.get("buttons", id).split(";");
-        action_bar(tmp[0] + ";" + tmp[1], tmp[2]);
+    $("#content").html("<h2>" + Library.get("event_title", id) + "</h2>" + Library.get("event_text", id));
+    if(Library.get("event_buttons", id)) {
+        tmp = Library.get("event_buttons", id).split(";");
+        action_bar(tmp[0] + ";" + tmp[1] + (tmp[2] ? ";" + tmp[2] : ""));
     }
 }
 
@@ -683,8 +572,8 @@ function initiate() {
 function item_description(id) {
     "use strict";
     var out = "";
-    if (Items.get("use", id) !== null){
-        $.each(Items.get("use", id).split(","), function (index, value) {
+    if (Library.get("item_use", id) !== "undefined"){
+        $.each(Library.get("item_use", id).split(","), function (index, value) {
             switch(value.split(";")[0]) {
                 case 'hp':
                     out += "Restores " + value.split(";")[1] * (player.get("special")===12 ? 1.25 : 1) + " health.";
@@ -707,7 +596,7 @@ function use_item(id) {
     if ($("#small_window").css("display")==="block"){
         overlay("#small_window");
     }
-    $.each(Items.get("use", id).split(","), function (index, value) {
+    $.each(Library.get("item_use", id).split(","), function (index, value) {
         switch(value.split(";")[0]) {
             case 'hp':
                 player_hp(value.split(";")[1] * (player.get("special")===12 ? 1.25 : 1));
@@ -928,9 +817,9 @@ function explore() {
     
     $.each(player.arr("locationsdiscovered", ","), function (index, value) {
         if (location_place_master[value]){
-            travel += "<div onclick='go2location(" + value + ")' class='list-object'>" + Locations.get("name", value) + "</div>";
+            travel += "<div onclick='go2location(" + value + ")' class='list-object'>" + Library.get("location_name", value) + "</div>";
         }else{
-             exploration += "<div onclick='go2location(" + value + ")' class='list-object'>" + Locations.get("name", value) + "</div>";
+             exploration += "<div onclick='go2location(" + value + ")' class='list-object'>" + Library.get("location_name", value) + "</div>";
         }
     });
     
@@ -942,8 +831,8 @@ function explore() {
 function go2location(id) {
     "use strict";
     var temp;
-    if(Locations.get("event", id)) {
-        temp = shuffle(Locations.get("event", id).split(","));
+    if(Library.get("location_event", id)) {
+        temp = shuffle(Library.get("location_event", id).split(","));
         $.each(temp, function(index, value) {
             if(Math.random() * value.split(";")[1] > Math.random() * 100) {
                 if(event(value) !== false) {
@@ -962,15 +851,15 @@ function go2location(id) {
     player.set("location", id);
     if (5 * tmp>player.get("energy")){ tmp = player.get("energy") / 10; }
     energy(-5 * tmp);
-    if (Math.random() * Locations.get("threat", id) > Math.random() * 100) {
+    if (Math.random() * Library.get("location_threat", id) > Math.random() * 100) {
         combat(); return;
     }
-    var out = "<h2>" + Locations.get("name", id) + "</h2>dfgfdgfdgfd<p>" + Locations.get("description", id) + "</p>",
+    var out = "<h2>" + Library.get("location_name", id) + "</h2>dfgfdgfdgfd<p>" + Library.get("location_description", id) + "</p>",
         randomlyselecteddiscovery = false;
-    if (Locations.get("discover", id)){
+    if (Library.get("location_discover", id)){
         var chanceofdiscoveryarray = [];
         var chanceofdiscoverysum = 0;
-        $.each(Locations.get("discover", id).split(","), function (index, value) {
+        $.each(Library.get("location_discover", id).split(","), function (index, value) {
             if ($.inArray(value, player.arr("locationsdiscovered", ","))===-1) {
                 chanceofdiscoverysum += (value.split(";")||value.split(";")===0?(value.split(";")?100:value.split(";")):10)+1;
                 chanceofdiscoveryarray[index] = chanceofdiscoverysum;
@@ -981,16 +870,16 @@ function go2location(id) {
             for(i=0;i<chanceofdiscoveryarray.length;i++) {
             if (n<chanceofdiscoveryarray[i]){ randomlyselecteddiscovery = i; break; }
         }
-        player.add("locationsdiscovered", Locations.get("discover", id).split(",")[randomlyselecteddiscovery]);
+        player.add("locationsdiscovered", Library.get("location_discover", id).split(",")[randomlyselecteddiscovery]);
         out += "After " +tmp+ " hour(s) of exploring you spot something. ";
-        out += "<strong>You have discovered " + Locations.get("name", randomlyselecteddiscovery) + "</strong>.";
+        out += "<strong>You have discovered " + Library.get("location_name", randomlyselecteddiscovery) + "</strong>.";
         }
     }
-    if (!randomlyselecteddiscovery&&!Locations.get("master", id)) {
+    if (!randomlyselecteddiscovery&&!Library.get("location_master", id)) {
         out += "After scouering around for " + tmp + " hour(s), you decide to head back to your camp.";
     }
-    if (Locations.get("master", id)) {
-        out += Locations.get("description", id);
+    if (Library.get("location_master", id)) {
+        out += Library.get("location_description", id);
         action_bar("0;0,6");
     }else{
         action_bar("6");
@@ -1322,7 +1211,7 @@ function vendor(id) {
     }
     var tmp = "<h2>" + vendor_name[id] + "</h2><span class='notice'>" + vendor_dialogue[id] + "</span><p/>";
     $.each(vendor_items[id], function (index, value) {
-        tmp += "<div onclick='buy_item(" +value+ ");' class='tradesquare'><span>" + Items.get("name", value) + "</span><span class='price'>$" + get_price(Items.get("price", value)) + "</span><span class='desc'>" + item_description(value) + "</span></div>";
+        tmp += "<div onclick='buy_item(" +value+ ");' class='tradesquare'><span>" + Library.get("item_name", value) + "</span><span class='price'>$" + get_price(Library.get("item_price", value)) + "</span><span class='desc'>" + item_description(value) + "</span></div>";
     });
     $("#content").html(tmp);
     action_bar("4;" +id+ ",3");
@@ -1343,8 +1232,8 @@ function gamble(action) {
 function buy_item(id, amount) {
     "use strict";
     if (!amount){ amount = 1; }
-    if (get_price(Items.get("price", id)*amount)>player.get("money")){ popup(1); return; }
-    player.change("money",-get_price(Items.get("price", id)));
+    if (get_price(Library.get("item_price", id)*amount)>player.get("money")){ popup(1); return; }
+    player.change("money",-get_price(Library.get("item_price", id)));
     editinventory(id, amount);
 }
 function sell_item_menu() {
@@ -1352,7 +1241,7 @@ function sell_item_menu() {
     var out="<h2>Sell Items</h2>";
     if (player.len("inventory") <= 0){ out+="Your inventory is empty!"; }else{
         $.each(player.arr("inventory", ","), function (index, value) {
-            out += "<div onclick='sell_item(" +value.split(";")[0]+ ")' class='tradesquare'><span>" + Items.get("name", value.split(";")[0]) + "</span><span class='price'>$" + get_price(Items.get("price", value.split(";")[0]), true) + "<span class='right'>Amount: " + value.split(";")[1] + "</span></span><span class='desc'>" + item_description(value.split(";")[0]) + "</span></div>";
+            out += "<div onclick='sell_item(" +value.split(";")[0]+ ")' class='tradesquare'><span>" + Library.get("item_name", value.split(";")[0]) + "</span><span class='price'>$" + get_price(Library.get("item_price", value.split(";")[0]), true) + "<span class='right'>Amount: " + value.split(";")[1] + "</span></span><span class='desc'>" + item_description(value.split(";")[0]) + "</span></div>";
         });
     }
     $("#content").html(out);
@@ -1360,7 +1249,7 @@ function sell_item_menu() {
 function sell_item(id, amount) {
     "use strict";
     if (!amount){ amount = 1; }
-    player.change("money", get_price(Items.get("price", id)));
+    player.change("money", get_price(Library.get("item_price", id)));
     editinventory(id, amount, true);
     sell_item_menu();
 }
@@ -1407,7 +1296,7 @@ function show_inventory(update) {
     }
     if (player.len("inventory") > 0) {
         $.each(player.arr("inventory", ","), function (index, value) {
-            out += "<div onclick='use_item(\"" +value.split(";")[0]+ "\")' class='list-object' title='" +item_description(value.split(";")[0])+ "'>" + (value.split(";")[1]?value.split(";")[1]:1) + " " + Items.get("name", value.split(";")[0]) + "<span class='right'>" +item_description(value.split(";")[0])+ "</span></div>";
+            out += "<div onclick='use_item(\"" +value.split(";")[0]+ "\")' class='list-object' title='" +item_description(value.split(";")[0])+ "'>" + (value.split(";")[1]?value.split(";")[1]:1) + " " + Library.get("item_name", value.split(";")[0]) + "<span class='right'>" +item_description(value.split(";")[0])+ "</span></div>";
         });
     }
     if (!update) {
