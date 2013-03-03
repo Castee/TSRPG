@@ -1,16 +1,19 @@
 var Library = (function() {
     var lib = ["event_title", "event_text", "event_effects", "event_buttons", "event_requirements", "location_name", "location_description",
                "location_threat", "location_ontravel", "location_enemies", "location_event", "location_discover", "location_master",
-               "enemy_name", "enemy_health", "enemy_damage", "enemy_event", "item_name", "item_price", "item_event", "item_use"];
+               "enemy_name", "enemy_health", "enemy_damage", "enemy_event", "item_name", "item_price", "item_event", "item_use", "special_name",
+               "special_effect", "special_description"];
     $.each(lib, function(index, value) {
         lib[value] = [];
     });
     return{
         get: function(key, index) {
-            if(index === "undefined" || lib[key][index] === "undefined") {
-                return "undefined";
+            if(index !== "undefined" || lib[key][index] !== "undefined") {
+                return lib[key][index];
+            }else if(index === "undefined" && lib[key] !== "undefined") {
+                return lib[key];
             }
-            return lib[key][index];
+            return "undefined";
         },
         set: function(key, id, value) {
             id = parseInt(id);
@@ -25,10 +28,15 @@ var Library = (function() {
 }());
 
 function xmlparser(txt) {
-    var itemId = [], i = 0, use, effects, discoverables, enemies, but, temp, req, event, placeinarr, id,
+    var itemId = [], i = 0, use, effects, discoverables, enemies, but, temp, req, event, placeinarr, id, name,
         tags = ["items item", "locations location", "data > enemies enemy", "data > events event", "data > specials special"],
         validreq = ["health", "mana", "strength", "stamina", "agility", "intelligence", "charisma", "libido", "energy", "lust" ,"special" ,"origin", "location", "level"],
-        validbuttons = ["event", "travel"];
+        validbuttons = ["event", "travel"], debug = "";
+    if($(txt).find("log").text() === "1" || "true") {
+        debug = true;
+    } else {
+        debug = false;
+    }
     $.each(tags, function (index, value) {
     itemId = [];
         $(txt).find(value).each(function() {
@@ -39,18 +47,24 @@ function xmlparser(txt) {
             req = "";
             event = "";
             id = "";
+            name = "";
             if($(this).find("id").text() === "") {
                 //Empty IDs are not loaded.
-                console.log("XMLparserWarning: No ID defined");
+                if(debug) {
+                    console.log("XMLParser: No ID defined.");
+                }
                 return;
             }
             if($.inArray($(this).find("id").text(), itemId) !== -1) {
                 //Duplicated IDs are not loaded.
-                console.log("XMLparserWarning: Did not load duplicated ID " + $(this).find("id").text());
+                if(debug) {
+                    console.log("XMLParser: Did not load duplicated ID.");
+                    }
                 return;
             }
             id = $(this).find("id").text();
-            itemId[i++] = $(this).find("id").text();
+            name = $(this).find("name").text();;
+            itemId[i++] = id;
             effects = $(this).find("effects");
             if($(effects).find("heal").length > 0) { use += (use.length > 0 ? "," : "") + "hp;" + $(effects).find("heal").text(); }
             if($(effects).find("mana").length > 0) { use += (use.length > 0 ? "," : "") + "mp;" + $(effects).find("mana").text(); }
@@ -69,43 +83,76 @@ function xmlparser(txt) {
             });
 
             if(index === 0) {
-                Library.set("item_name", id, $(this).find("name").text());
-                Library.set("item_price", id, $(this).find("price").text());
-                Library.set("item_use", id, use);
-                Library.set("item_event", id, event);
-            } else if (index === 1) {
-                $(this).find("discoverable discover").each(function (x, v) {
-                    discoverables += (discoverables.length > 0 ? "," : "") + $(v).text();
-                });
-                $(this).find("enemies enemy").each(function (x, v) {
-                    enemies += (enemies.length > 0 ? "," : "") + $(v).text();
-                });
-                
-                Library.set("location_name", id, $(this).find("name").text());
-                Library.set("location_ontravel", id, $(this).find("onTravel").text());
-                Library.set("location_threat", id, $(this).find("threat").text());
-                Library.set("location_discover", id, discoverables);
-                Library.set("location_enemies", id, enemies);
-                Library.set("location_event", id, event);
-                Library.set("location_master", id, $(this).find("master").text());
-            } else if (index === 2) {
-                Library.set("enemy_name", id, $(this).find("name").text());
-                Library.set("enemy_health", id, $(this).find("health").text());
-                Library.set("enemy_damage", id, $(this).find("damage").text());
-                Library.set("enemy_event", id, event);
-            } else if (index === 3) {
-                temp = $(this).find("buttons button");
-                $.each(temp, function() {
-                    placeinarr = $.inArray($(this).attr("type"), validbuttons);
-                    if(placeinarr !== -1) {
-                        but += (but.length > 0 ? "," : "") + validbuttons[placeinarr] + ";" + $(this).attr("id") + ";" + $(this).text();
+                if(name, $(this).find("price").text()) {
+                    Library.set("item_name", id, name);
+                    Library.set("item_price", id, $(this).find("price").text());
+                    Library.set("item_use", id, use);
+                    Library.set("item_event", id, event);
+                } else {
+                    if(debug) {
+                        console.log("XMLParser: Item must contain Name and Price.");
                     }
-                });
-                Library.set("event_title", id, $(this).find("title").text());
-                Library.set("event_text", id, $(this).find("text").text());
-                Library.set("event_effects", id, use);
-                Library.set("event_buttons", id, but);
-                Library.set("event_requirements", id, req);
+                }
+            } else if (index === 1) {
+                if(name && $(this).find("onTravel").text() && $(this).find("threat").text()) {
+                    $(this).find("discoverable discover").each(function (x, v) {
+                        discoverables += (discoverables.length > 0 ? "," : "") + $(v).text();
+                    });
+                    $(this).find("enemies enemy").each(function (x, v) {
+                        enemies += (enemies.length > 0 ? "," : "") + $(v).text();
+                    });
+                    Library.set("location_name", id, name);
+                    Library.set("location_ontravel", id, $(this).find("onTravel").text());
+                    Library.set("location_threat", id, $(this).find("threat").text());
+                    Library.set("location_discover", id, discoverables);
+                    Library.set("location_enemies", id, enemies);
+                    Library.set("location_event", id, event);
+                    Library.set("location_master", id, $(this).find("master").text());
+                } else {
+                    if(debug) {
+                        console.log("XMLParser: Location must contain Name, OnTravel and Threat.");
+                    }
+                }
+            } else if (index === 2) {
+                if(name && $(this).find("health").text() && $(this).find("damage").text()) {
+                    Library.set("enemy_name", id, name);
+                    Library.set("enemy_health", id, $(this).find("health").text());
+                    Library.set("enemy_damage", id, $(this).find("damage").text());
+                    Library.set("enemy_event", id, event);
+                } else {
+                    if(debug) {
+                        console.log("XMLParser: Enemy must contain Name, Health and Damage.");
+                    }
+                }
+            } else if (index === 3) {
+                if($(this).find("title").text() && $(this).find("text").text()) {
+                    temp = $(this).find("buttons button");
+                    $.each(temp, function() {
+                        placeinarr = $.inArray($(this).attr("type"), validbuttons);
+                        if(placeinarr !== -1) {
+                            but += (but.length > 0 ? "," : "") + validbuttons[placeinarr] + ";" + $(this).attr("id") + ";" + $(this).text();
+                        }
+                    });
+                    Library.set("event_title", id, $(this).find("title").text());
+                    Library.set("event_text", id, $(this).find("text").text());
+                    Library.set("event_effects", id, use);
+                    Library.set("event_buttons", id, but);
+                    Library.set("event_requirements", id, req);
+                } else {
+                    if(debug) {
+                        console.log("XMLParser: Event must contain Title and Text.");
+                    }
+                }
+            } else if (index === 4) {
+                if(name && $(this).find("description").text() && use) {
+                    Library.set("special_name", id, name);
+                    Library.set("special_description", id, $(this).find("description").text());
+                    Library.set("special_effect", id, use);
+                } else {
+                    if(debug) {
+                        console.log("XMLParser: Special must contain Name, Description and Effects.");
+                    }
+                }
             }
         });
     });
