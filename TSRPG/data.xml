@@ -84,6 +84,61 @@
         <mana>100</mana>
       </effects>
     </item>
+    <item>
+    <id>859001</id>
+    <name>Apple</name>
+    <price>.25</price>
+    <effects>
+        <effect chance="1" type="health">2</effect>
+        <effect chance="2" type="health">1</effect>
+    </effects>
+</item>
+<item>
+    <id>859002</id>
+    <name>Pear</name>
+    <price>1</price>
+    <effects>
+        <effect chance="1" type="health">10</effect>
+        <effect chance="2" type="health">5</effect>
+    </effects>
+</item>
+<item>
+    <id>859003</id>
+    <name>Wild Apple</name>
+    <price>1.2</price>
+    <effects>
+        <effect chance="1" type="health">12</effect>
+        <effect chance="2" type="health">7</effect>
+    </effects>
+</item>
+<item>
+    <id>859004</id>
+    <name>Wild Pear</name>
+    <price>2</price>
+    <effects>
+        <effect chance="1" type="health">15</effect>
+        <effect chance="2" type="health">10</effect>
+    </effects>
+</item>
+<item>
+    <id>859005</id>
+    <name>Juniper Berry</name>
+    <price>.08</price>
+    <effects>
+        <effect chance="100" type="mana">1</effect>
+    </effects>
+<item>
+    <id>859006</id>
+    <name>Juniper Berries</name>
+    <price>100</price>
+    <effects>
+        <effect chance="100" type="mana">200</effect>
+    </effects>
+</item>
+    
+    
+    
+    
   </items>
   <locations>
     <location>
