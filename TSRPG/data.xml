@@ -182,47 +182,47 @@
     <location>
       <id>4</id>
       <name>Valley</name>
-      <onTravel>Grass reach as far as your eyes can see.</onTravel>
+      <onTravel>You find yourself upon a sharp incline and nearly go falling down as you realize the terrain has changed.</onTravel>
       <threat>50</threat>
     </location>
     <location>
       <id>5</id>
       <name>Beach</name>
-      <onTravel>Grass reach as far as your eyes can see.</onTravel>
+      <onTravel>The waves of the sea lap gently at the shore, you sink into the sand as you walk.</onTravel>
       <threat>50</threat>
     </location>
     <location>
       <id>6</id>
       <name>Evergreen forest</name>
-      <onTravel>Grass reach as far as your eyes can see.</onTravel>
+      <onTravel>The trees here are taller and sharper, it seems to be colder as well.</onTravel>
       <threat>50</threat>
     </location>
     <location>
       <id>7</id>
       <name>Forest</name>
-      <onTravel>Grass reach as far as your eyes can see.</onTravel>
+      <onTravel>The forest is full of trees and you are afraid of getting lost.</onTravel>
       <threat>50</threat>
       <discoverable>
-        <discover>6</discover>
+        <discover>6,859003</discover>
       </discoverable>
     </location>
     <location>
       <id>8</id>
       <name>Plains</name>
-      <onTravel>Grass reach as far as your eyes can see.</onTravel>
+      <onTravel>G reach as far as your eyes can see, some parts are tall enough to eclipse the sky from your view.</onTravel>
       <threat>50</threat>
     </location>
     <location>
       <id>9</id>
       <name>City</name>
-      <onTravel>Grass reach as far as your eyes can see.</onTravel>
+      <onTravel>Houses are crammed together tightly in this stinking hive of humanity.</onTravel>
       <threat>0</threat>
     </location>
     <location>
       <id>10</id>
       <master>9</master>
       <name>City</name>
-      <onTravel>Grass reach as far as your eyes can see.</onTravel>
+      <onTravel>The smell of life bares on you, and the sky is choked by cooking fires.</onTravel>
       <threat>0</threat>
     </location>
   </locations>
